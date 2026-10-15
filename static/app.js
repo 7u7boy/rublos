@@ -22,11 +22,18 @@
   const fechaCorta = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("es-EC", { day: "numeric", month: "short" });
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
 
-  const ICONOS = {
-    ENVIAR_YA: '<svg viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="28" cy="28" r="23"/><path d="M17 29l8 8 15-17"/></svg>',
-    MITAD: '<svg viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="28" cy="28" r="23"/><path d="M28 5v46" /><path d="M28 5a23 23 0 0 1 0 46z" fill="currentColor"/></svg>',
-    ESPERAR: '<svg viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 6h24M16 50h24"/><path d="M19 6c0 12 9 15 9 22s-9 10-9 22M37 6c0 12-9 15-9 22s9 10 9 22"/></svg>',
-  };
+  // Semáforo: rojo arriba, amarillo en medio, verde abajo. Se enciende la luz que toca.
+  const LUZ = { ESPERAR: 0, MITAD: 1, ENVIAR_YA: 2 };
+  const CLASE = ["r", "a", "v"];
+  function semaforo(ver) {
+    const on = LUZ[ver];
+    let g = '<svg viewBox="0 0 58 118"><rect class="caja" x="1" y="1" width="56" height="116" rx="18"/>';
+    for (let i = 0; i < 3; i++) {
+      const cy = 21 + i * 38;
+      g += `<circle class="foco ${i === on ? "on " + CLASE[i] : ""}" cx="29" cy="${cy}" r="14"/>`;
+    }
+    return g + "</svg>";
+  }
 
   async function cargar() {
     try {
@@ -57,7 +64,9 @@
     $("actualizado").textContent = d.desactualizado
       ? "No pudimos actualizar. Mostrando el último dato guardado."
       : `Cambio oficial del ${fechaLarga(e.fecha)}`;
-    $("valor").textContent = fmt(e.valor);
+    animarValor(e.valor);
+    $("serie").textContent = "№ " + e.fecha.split("-").reverse().join(".");
+    pintarMini();
     const dif = $("dif"); dif.textContent = "";
     if (e.previo) {
       const c = e.cambio_dia_pct, sube = c >= 0;
@@ -68,7 +77,7 @@
     // Veredicto
     const rec = d.recomendacion, v = $("veredicto");
     v.dataset.v = rec.veredicto;
-    $("ver-icono").innerHTML = ICONOS[rec.veredicto];      // SVG fijo del programa, sin datos externos
+    $("ver-icono").innerHTML = semaforo(rec.veredicto);   // SVG fijo del programa, sin datos externos
     const sem = S.plazo === 7 ? "una semana" : "2 semanas";
     $("ver-titulo").textContent = {
       ENVIAR_YA: "Conviene enviar hoy",
@@ -83,6 +92,37 @@
     pintarTabla();
     pintarCanales();
     pintarComo();
+  }
+
+  let primera = true;
+  function animarValor(v) {
+    const nodo = $("valor");
+    const quieto = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!primera || quieto) { nodo.textContent = fmt(v); primera = false; return; }
+    primera = false;
+    const t0 = performance.now(), dur = 900, ini = v * 0.88;
+    const paso = (t) => {
+      const k = Math.min(1, (t - t0) / dur), ease = 1 - Math.pow(1 - k, 3);
+      nodo.textContent = fmt(ini + (v - ini) * ease);
+      if (k < 1) requestAnimationFrame(paso);
+    };
+    requestAnimationFrame(paso);
+  }
+
+  function pintarMini() {
+    const svg = $("mini"); svg.textContent = "";
+    const pts = S.data.serie.slice(-30).map(([, v]) => v);
+    if (pts.length < 2) return;
+    const lo = Math.min(...pts), hi = Math.max(...pts), pad = (hi - lo) * 0.15 || 1;
+    const x = (i) => (i / (pts.length - 1)) * 300, y = (v) => 50 - ((v - (lo - pad)) / (hi - lo + 2 * pad)) * 46;
+    const d = pts.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+    const mk = (tag, at) => { const n = document.createElementNS(NS, tag); for (const k in at) n.setAttribute(k, at[k]); svg.appendChild(n); return n; };
+    const defs = mk("defs", {}), g = document.createElementNS(NS, "linearGradient");
+    g.setAttribute("id", "mg"); g.setAttribute("x1", "0"); g.setAttribute("y1", "0"); g.setAttribute("x2", "0"); g.setAttribute("y2", "1");
+    [["0", ".35"], ["1", "0"]].forEach(([o, op]) => { const st = document.createElementNS(NS, "stop"); st.setAttribute("offset", o); st.setAttribute("stop-color", "#F2C14E"); st.setAttribute("stop-opacity", op); g.appendChild(st); });
+    defs.appendChild(g);
+    mk("path", { class: "a", d: `${d}L300,54L0,54Z` });
+    mk("path", { class: "l", d });
   }
 
   function pintarCalculo() {
