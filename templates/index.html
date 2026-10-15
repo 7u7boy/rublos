@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dólares a rublos</title>
+<meta name="description" content="Tipo de cambio del dólar al rublo y una recomendación sencilla de cuándo enviar dinero.">
+<meta name="theme-color" content="#EAF1F3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1D23" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="/static/manifest.webmanifest">
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main id="app" aria-live="polite">
+
+  <header class="top">
+    <h1 class="marca">Dólares a rublos</h1>
+    <p class="actualizado" id="actualizado">Cargando…</p>
+  </header>
+
+  <section class="cambio" aria-labelledby="t-cambio">
+    <h2 id="t-cambio" class="sr">Cambio de hoy</h2>
+    <p class="cambio-linea">
+      <span class="cambio-izq">1 US$ =</span>
+      <span class="cambio-valor" id="valor">—</span>
+      <span class="cambio-der">₽</span>
+    </p>
+    <p class="cambio-dif" id="dif"></p>
+  </section>
+
+  <section class="veredicto" id="veredicto" data-v="cargando" aria-labelledby="t-ver">
+    <h2 id="t-ver" class="sr">Qué hacer</h2>
+    <div class="ver-icono" id="ver-icono" aria-hidden="true"></div>
+    <p class="ver-titulo" id="ver-titulo">Calculando…</p>
+    <p class="ver-razon" id="ver-razon"></p>
+  </section>
+
+  <section class="bloque" aria-labelledby="t-plazo">
+    <h2 id="t-plazo">¿Para cuándo necesita el dinero?</h2>
+    <div class="chips" role="radiogroup" aria-labelledby="t-plazo" id="chips-plazo">
+      <button type="button" role="radio" data-dias="2">Ya mismo</button>
+      <button type="button" role="radio" data-dias="7">En una semana</button>
+      <button type="button" role="radio" data-dias="14">En dos semanas</button>
+      <button type="button" role="radio" data-dias="30">En un mes o más</button>
+    </div>
+
+    <label class="monto" for="monto">
+      <span>Si envía</span>
+      <input id="monto" type="number" inputmode="decimal" min="1" step="1" value="200">
+      <span>US$, recibirá unos</span>
+    </label>
+    <p class="resultado"><strong id="recibe">—</strong> <span>₽</span></p>
+    <p class="nota" id="rango-mes"></p>
+  </section>
+
+  <section class="bloque" aria-labelledby="t-futuro">
+    <h2 id="t-futuro">¿Subirá o bajará?</h2>
+    <p class="nota">Si el cambio sube, cada dólar rinde más rublos. Es bueno para quien envía.</p>
+    <div id="horizontes" class="horizontes"></div>
+    <p class="aviso">Nadie puede adivinar el cambio. Estos números solo cuentan lo que pasó antes en situaciones parecidas.</p>
+  </section>
+
+  <section class="bloque" aria-labelledby="t-hist">
+    <h2 id="t-hist">Cómo ha estado el cambio</h2>
+    <div class="chips chips-chicos" role="radiogroup" aria-label="Período del gráfico" id="chips-rango">
+      <button type="button" role="radio" data-dias="30">30 días</button>
+      <button type="button" role="radio" data-dias="90">3 meses</button>
+      <button type="button" role="radio" data-dias="365">1 año</button>
+    </div>
+    <div class="grafico" id="grafico" role="img" aria-label="Gráfico del tipo de cambio"></div>
+    <details class="tabla-det">
+      <summary>Ver los valores en tabla</summary>
+      <table id="tabla"><thead><tr><th scope="col">Fecha</th><th scope="col">Rublos por dólar</th></tr></thead><tbody></tbody></table>
+    </details>
+  </section>
+
+  <section class="bloque" aria-labelledby="t-canales">
+    <details class="canales-det">
+      <summary id="t-canales">Comparar formas de enviar</summary>
+      <p class="nota">Cada servicio da su propio cambio y cobra su comisión. Escriba lo que le ofrece cada uno y vea cuál rinde más. Si deja el cambio vacío, se usa el oficial.</p>
+      <div id="canales"></div>
+      <button type="button" class="boton-sec" id="canal-nuevo">Agregar otra forma de enviar</button>
+    </details>
+  </section>
+
+  <section class="bloque" aria-labelledby="t-como">
+    <details>
+      <summary id="t-como">Cómo se calcula esto</summary>
+      <div class="como" id="como"></div>
+    </details>
+  </section>
+
+  <footer class="pie">
+    <p>Fuente: tipo de cambio oficial del Banco Central de Rusia. Lo que se recibe en la práctica depende del servicio de envío.</p>
+  </footer>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>
